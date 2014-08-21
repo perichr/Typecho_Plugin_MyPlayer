@@ -14,7 +14,6 @@ function GetUrlContent( $url ){
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($curl, CURLOPT_FOLLOWLOCATION,1);
     curl_setopt($curl, CURLOPT_USERAGENT, 'Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16');
-    curl_setopt ($curl, CURLOPT_PROXY, 'http://192.168.4.5:808');
     $res=curl_exec($curl);
     curl_close($curl);
     return $res;
