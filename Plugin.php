@@ -43,7 +43,7 @@ class MyPlayer_Plugin implements Typecho_Plugin_Interface
             'first', _t('是否自动转换链接'));
         $form->addInput($mode);
 
-        $audio_player_theme = new Typecho_Widget_Helper_Form_Element_Text('audio_player_theme', NULL, '#FFFFFF|#FF9933|#FF6633', _t('音频播放器的配色'), _t(''));
+        $audio_player_theme = new Typecho_Widget_Helper_Form_Element_Text('audio_player_theme', NULL, 'FF8719|494949|FF6633|FFFFFF|FFFFFF', _t('音频播放器的配色'), _t('前景|背景|文字|高亮|高亮文字。不要加#号。'));
         $form->addInput($audio_player_theme);
 
     }

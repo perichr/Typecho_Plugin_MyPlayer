@@ -7,7 +7,7 @@ P({
             var f = me.fn,
                 o = me.option,
                 api = me.GetPlugin('api.js')
-            o('data_sign', 'data-me-sign')
+            o('data_sign', 'data-mp-sign')
             if (!o('query_parent')) {
                 o.query_parent = f.qs('.post') ? '.post' : f.qs('.entry-content') ? '.entry-content' : ''
             }
@@ -63,7 +63,10 @@ P({
             var Ck = me.CheckMode = function(el) {
                     var data_sign = o('data_sign'),
                         mode = el.getAttribute(data_sign)
-                        if (mode == 'false') return false
+
+                    
+                    
+                    if (mode === 'false') return false
                     if (mode) return mode
                     f.each(api.option.apis, function(key, item) {
                         if (item.check.call(el, el.href, el.getAttribute('data-type'))) {
@@ -78,6 +81,7 @@ P({
                     var mode = Ck(el)
                     if (mode) {
                         var bind = {
+                            api: api.option.apis[mode],
                             element: el,
                             callback: callback,
                             attributes: {},
@@ -88,6 +92,10 @@ P({
                             options: el.getAttribute('data-options'),
                         }
                         api.option.apis[mode].create.call(bind, el.href)
+                        el.title = '正在尝试载入外链播放器……'
+                        var loading = f.element('span', {'class': 'loading'})
+                        f.text(loading, '尝试载入：')
+                        f.prepend(el, loading)
                         return true
                     }
 
@@ -95,8 +103,8 @@ P({
                         var attributes = this.attributes,
                             base = _b[this.base] || {}
                         f.extend(attributes, base.attributes, false)
-                        var swf = f.element(base.tag, attributes)
-                        f.after(el, swf)
+                        var player = f.element(base.tag, attributes)
+                        f.after(el, player)
                         f.remove(el)
                     }
                 }
@@ -107,19 +115,22 @@ P({
             var link_list = f.qa(o.query_parent + ' a'),
                 conv = o.mode.ALL || o.mode.FIRST,
                 click = function(event) {
+                    event.preventDefault()
                     var target = event.target,
                         converted = Co(target)
                         f.off(target, 'click', click)
-                        if (converted) event.preventDefault()
                 }
             f.each(link_list, function() {
-                var link = this
-                if (conv) {
-                    var conved = Co(link)
-                    if (o.mode.FIRST && conved) conv = false
-                } else {
-                    link.setAttribute(api.option.auto_sign, 'true')
-                    f.on(link, 'click', click)
+                var link = this,
+                    mode = Ck(link)
+                if(mode){
+                    if(conv && o.mode.FIRST){
+                        Co(link)
+                        conv = false
+                    } else {
+                        link.setAttribute(api.option.auto_sign, 'true')
+                        f.on(link, 'click', click)
+                    }
                 }
             })
         })

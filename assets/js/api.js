@@ -19,8 +19,39 @@ P({
                     this.base = 'flash'
                     this.attributes.width = 257
                     this.attributes.height = 33
-                    this.attributes.src = href.replace(/.*\/(\d+)\/?/, 'http://www.xiami.com/widget/1426712_$1/singlePlayer.swf')
+                    this.attributes.src = href.replace(/.*\/(\d+)\/?/, 'http://www.xiami.com/widget/0_$1/singlePlayer.swf')
                     this.callback()
+                }
+            },
+            '虾米专辑和精选': {
+                'check': function(href) {
+                    return href && /^http:\/\/www\.xiami\.com\/(album|collect)\/\d/.test(href)
+                },
+                'create': function(href) {
+                    this.base = 'flash'
+                    this.attributes.width = 235
+                    this.attributes.height = 346
+                    var id = href.replace(/.*\/(\d+)\/?/, '$1'),
+                        type = href.indexOf('album') > -1 ? 1 : 3,
+                        bind = this
+
+                    console.log(type)
+                    f.jsonp({
+                        url: 'https://query.yahooapis.com/v1/public/yql',
+                        data: {format: 'json', q: 'select%20*%20from%20xml%20where%20url%3D%22http%3A%2F%2Fwww.xiami.com%2Fsong%2Fplaylist%2Fid%2F' + id + '%2Ftype%2F' + type + '%22'},
+                        success: function(data) {
+                            if(data && data.query && data.query.results && data.query.results.playlist && data.query.results.playlist.trackList){
+                                data = data.query.results.playlist.trackList
+                                var list = []
+                                f.each(data.track, function(i, s){
+                                    list.push(s.song_id)
+                                })
+                                var theme = f.trim(o('theme')).split('|')
+                                bind.attributes.src = 'http://www.xiami.com/widget/0_' + list.join() + ',_' + bind.attributes.width + '_' + bind.attributes.height + '_' + theme[1] + '_' + theme[0] + '/multiPlayer.swf'
+                                bind.callback()
+                            }
+                        }
+                    })
                 }
             },
             '优酷视频': {
@@ -55,7 +86,7 @@ P({
                     this.base = 'flash'
                     this.attributes.width = 480
                     this.attributes.height = 400
-                    var id = href.replace(/^.*v_(.*)\.html$/g, '$1'),bind = this
+                    var id = href.replace(/^.*v_(.*)\.html$/g, '$1'), bind = this
                     f.jsonp({
                         url: me.GetPath('../../api.php'),
                         data: {service: 'iqiyi', id: id},
@@ -166,6 +197,29 @@ P({
                     this.attributes.src = me.GetPath('../../player/#') + JSON.stringify(op)
                     this.attributes.width = 223
                     this.attributes.height = 24
+                    this.callback()
+                }
+            },
+            'gist': {
+                'check': function(href) {
+                    return href && /^https\:\/\/gist\.github\.com\/[^\/]+\/\w+/.test(href)
+                },
+                'create': function(href) {
+                    this.base = 'iframe'
+                    this.attributes.src = href + '.pibb'
+                    this.attributes.height = 200
+                    this.callback()
+                }
+            },
+            'github': {
+                'check': function(href) {
+                    return href && /^https\:\/\/github\.com\/[^\/]+\/\w+/.test(href)
+                },
+                'create': function(href) {
+                    this.base = 'iframe'
+                    this.attributes.src = href.replace(/^https\:\/\/github\.com\/([^\/]+)\/([^\/]+)/, 'http://lab.lepture.com/github-cards/card.html?user=$1&repo=$2')
+                    this.attributes.width = 400
+                    this.attributes.height = 200
                     this.callback()
                 }
             },
