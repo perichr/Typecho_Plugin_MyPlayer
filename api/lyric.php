@@ -3,12 +3,23 @@
  * 歌词文件
  */
 class LYRIC extends API{
-    protected function LoadRemote( ) {
+    private $url;
+    protected function LoadParams( ) {
         if( TryGetParam( 'url', $url ) ) {
-            $source =  GetUrlContent( $url );
-            $this->data['source'] = $source;
-            //$this->data['json'] = $this->GetJson($source);
+            $this->url = $url;
+        } else{
+            return false;
         }
+        return true;
+    }
+    protected function GetCacheName( ) {
+        return 'lyric_'.md5($this->url);
+    }
+    protected function LoadRemote( ) {
+        $source = GetUrlContent( $this->url );
+        $this->data = array( );
+        $this->data['source'] = $source;
+        //$this->data['json'] = $this->GetJson($source);
     }
     function GetJson($lyric){
         $lrc = array();

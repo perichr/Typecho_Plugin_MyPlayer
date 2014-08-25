@@ -11,47 +11,90 @@ P({
         o('apis', {})
         o('auto_sign', 'data-auto-play')
         AddRange({
-            '虾米音乐': {
+            '虾米': {
                 'check': function(href) {
-                    return href && 0 == href.indexOf('http://www.xiami.com/song/')
+                    return href && /^http:\/\/www\.xiami\.com\/(song|album|artist|collect)\/\d/.test(href)
                 },
                 'create': function(href) {
-                    this.base = 'flash'
-                    this.attributes.width = 257
-                    this.attributes.height = 33
-                    this.attributes.src = href.replace(/.*\/(\d+)\/?/, 'http://www.xiami.com/widget/0_$1/singlePlayer.swf')
-                    this.callback()
-                }
-            },
-            '虾米专辑和精选': {
-                'check': function(href) {
-                    return href && /^http:\/\/www\.xiami\.com\/(album|collect)\/\d/.test(href)
-                },
-                'create': function(href) {
-                    this.base = 'flash'
-                    this.attributes.width = 235
-                    this.attributes.height = 346
                     var id = href.replace(/.*\/(\d+)\/?/, '$1'),
-                        type = href.indexOf('album') > -1 ? 1 : 3,
-                        bind = this
-
-                    console.log(type)
-                    f.jsonp({
-                        url: 'https://query.yahooapis.com/v1/public/yql',
-                        data: {format: 'json', q: 'select%20*%20from%20xml%20where%20url%3D%22http%3A%2F%2Fwww.xiami.com%2Fsong%2Fplaylist%2Fid%2F' + id + '%2Ftype%2F' + type + '%22'},
-                        success: function(data) {
-                            if(data && data.query && data.query.results && data.query.results.playlist && data.query.results.playlist.trackList){
-                                data = data.query.results.playlist.trackList
-                                var list = []
-                                f.each(data.track, function(i, s){
-                                    list.push(s.song_id)
-                                })
-                                var theme = f.trim(o('theme')).split('|')
-                                bind.attributes.src = 'http://www.xiami.com/widget/0_' + list.join() + ',_' + bind.attributes.width + '_' + bind.attributes.height + '_' + theme[1] + '_' + theme[0] + '/multiPlayer.swf'
-                                bind.callback()
-                            }
+                        type = href.replace(/.*(song|album|artist|collect).*/, '$1'),
+                        single = type === 'song',
+                        bind = this,
+                        s = o('xiami_single') == '0',
+                        m = o('xiami_multi') == '0'
+                    if(single && s) {
+                        this.base = 'flash'
+                        this.attributes.width = 257
+                        this.attributes.height = 33
+                        this.attributes.src = href.replace(/.*\/(\d+)\/?/, 'http://www.xiami.com/widget/0_$1/singlePlayer.swf')
+                        this.callback()
+                    } else if(single && !s) {
+                        this.base = 'iframe'
+                        var op = {theme: f.trim(o('theme')), media: []}
+                        op.media.push({
+                            xiami: href.replace(/.*\/(\d+)\/?/, '$1'),
+                        })
+                        if(this.element.getAttribute(o.auto_sign)){
+                            op.autoplay = true
                         }
-                    })
+                        this.attributes.src = me.GetPath('../../player/#') + JSON.stringify(op)
+                        this.attributes.width = 223
+                        this.attributes.height = 24
+                        this.callback()
+                    } else if(!single && m) {
+                        this.base = 'flash'
+                        this.attributes.width = 235
+                        this.attributes.height = 346
+                        f.jsonp({
+                            url: me.GetPath('../../api.php'),
+                            data: {service: 'xiami', id: id, type: type},
+                            success: function(data) {
+                                if (data) {
+                                    var list = []
+                                    f.each(data, function(i, s){
+                                        list.push(s.song_id)
+                                    })
+                                    var theme = f.trim(o('theme')).split('|')
+                                    bind.attributes.src = 'http://www.xiami.com/widget/0_' + list.join() + ',_' + bind.attributes.width + '_' + bind.attributes.height + '_' + theme[0] + '_' + theme[1] + '/multiPlayer.swf'
+                                    bind.callback()
+                                }
+                            }
+                        })
+                    } else if(!single && !m) {
+                        this.base = 'iframe'
+                        var op = {theme: f.trim(o('theme')), type: type, id: href.replace(/.*\/(\d+)\/?/, '$1')}
+                        if(this.element.getAttribute(o.auto_sign)){
+                            op.autoplay = true
+                        }
+                        this.attributes.src = me.GetPath('../../player/#') + JSON.stringify(op)
+                        this.attributes.width = 223
+                        this.attributes.height = 240
+                        this.callback()
+
+                        
+                        /*
+                        f.jsonp({
+                            url: me.GetPath('../../api.php'),
+                            data: {service: 'xiami', id: id, type: type},
+                            success: function(data) {
+                                var op = {theme: f.trim(o('theme')), media: []}
+                                if(bind.element.getAttribute(o.auto_sign)){
+                                    op.autoplay = true
+                                }
+                                if (data) {
+                                    var list = []
+                                    f.each(data, function(i, s){
+                                        op.media.push({
+                                            xiami: s.song_id
+                                        })
+                                    })
+                                    bind.attributes.src = me.GetPath('../../player/#') + JSON.stringify(op)
+                                    bind.callback()
+                                }
+                            }
+                        })
+                        */
+                    }
                 }
             },
             '优酷视频': {

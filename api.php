@@ -19,18 +19,34 @@ function GetUrlContent( $url ){
     return $res;
 }
 abstract class API {
+    protected $ready;
     protected $service;
-    protected $key;
     protected $data;
+    protected $cachename;
     protected $cachetime;
-    public function __construct( ){  
-        $this->cachetime = 86400;
-        $this->service = strtolower( get_class( $this ) );
-        $this->data = null;
-        $this->LoadData( );
+    public function __construct( ){
+        if($this->LoadParams()) {
+            $this->cachetime = 86400;
+            $this->cachename = $this->GetCacheName( );
+            $this->service = strtolower( get_class( $this ) );
+            $this->data = null;
+            $this->LoadData( );            
+        }
     }
     protected function LoadData( ) {
+        if(!file_exists('cache')){
+            MakeDir('cache');
+        }
+        $file = "cache/{$this->cachename}.json";
+        if($this->cachename && file_exists($file) && (filemtime($file) - time() < $this->cachetime)){
+            $this->data = json_decode(file_get_contents($file));
+            return;
+        }
         $this->LoadRemote( );
+        if($this->cachename){
+            file_put_contents($file, $this->GetData());
+        }
+        
     }
     public function GetData( $callback = null ) {
         $data = json_encode( $this->data );
@@ -40,6 +56,8 @@ abstract class API {
             return "{$callback}({$data})";
         }
     }
+    protected abstract function LoadParams( );
+    protected abstract function GetCacheName( );
     protected abstract function LoadRemote( );
 }
 if( TryGetParam( 'service', $service ) ) {

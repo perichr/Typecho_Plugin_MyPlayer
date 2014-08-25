@@ -4,7 +4,7 @@
  *
  * @package MyPlayer
  * @author perichr
- * @version 1.1.2
+ * @version 1.2.0
  * @link http://perichr.org
  */
 class MyPlayer_Plugin implements Typecho_Plugin_Interface
@@ -35,7 +35,7 @@ class MyPlayer_Plugin implements Typecho_Plugin_Interface
         $query_parent->input->setAttribute('class', 'mini');
         $form->addInput($query_parent);
         
-        $mode= new Typecho_Widget_Helper_Form_Element_Radio('mode',
+        $mode = new Typecho_Widget_Helper_Form_Element_Radio('mode',
             array( 'all' => _t('转换所有可用播放器'),
                 'click' => _t('等待点击'),
                 'first' => _t('转换首个可用播放器，其它等待点击')
@@ -43,9 +43,22 @@ class MyPlayer_Plugin implements Typecho_Plugin_Interface
             'first', _t('是否自动转换链接'));
         $form->addInput($mode);
 
-        $audio_player_theme = new Typecho_Widget_Helper_Form_Element_Text('audio_player_theme', NULL, 'FF8719|494949|FF6633|FFFFFF|FFFFFF', _t('音频播放器的配色'), _t('前景|背景|文字|高亮|高亮文字。不要加#号。'));
+        $audio_player_theme = new Typecho_Widget_Helper_Form_Element_Text('audio_player_theme', NULL, 'FF8719|494949|FFFFFF|FF6633|FFFFFF', _t('音频播放器的配色'), _t('前景|背景|文字|高亮|高亮文字。不要加#号。'));
         $form->addInput($audio_player_theme);
-
+        
+        $xiami_single = new Typecho_Widget_Helper_Form_Element_Radio('xiami_single',
+            array( '0' => _t('使用官方外链播放器'),
+                '1' => _t('使用内置播放器')
+            ),
+            '0', _t('处理虾米音乐单曲的方式'));
+        $form->addInput($xiami_single);
+        
+        $xiami_multi = new Typecho_Widget_Helper_Form_Element_Radio('xiami_multi',
+            array( '0' => _t('使用官方外链播放器'),
+                '1' => _t('使用内置播放器')
+            ),
+            '0', _t('处理虾米音乐列表的方式（例如专辑或者精选等）'));
+        $form->addInput($xiami_multi);
     }
     
     /**
@@ -81,6 +94,8 @@ class MyPlayer_Plugin implements Typecho_Plugin_Interface
         $o[ 'query_parent' ] = $config->query_parent;
         $o[ 'mode' ] = $config->mode;
         $o[ 'theme' ] = $config->audio_player_theme;
+        $o[ 'xiami_single' ] = $config->xiami_single;
+        $o[ 'xiami_multi' ] = $config->xiami_multi;
         echo '<script src="' . Typecho_Common::url('MyPlayer/assets/js/perichr.js', $options->pluginUrl) . '" data-PK="MyPlayer" data-options="' . htmlentities( json_encode( $o ), ENT_QUOTES ) . '" data-init="convert.js"></script>';
     }
     public static function EditorTool() 
