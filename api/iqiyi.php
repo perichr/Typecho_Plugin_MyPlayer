@@ -2,9 +2,9 @@
 /*
  * 爱奇艺
  */
-class IQIYI extends API{
+class iqiyi extends API{
     private $id;
-    protected function LoadParams( ) {
+    protected function LoadRemote( ) {
         if( TryGetParam( 'id', $id ) ) {
             $this->id = $id;
         } else{

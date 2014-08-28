@@ -2,7 +2,7 @@
 /*
  * 新浪视频
  */
-class SINA extends API{
+class sina extends API{
     private $url;
     protected function LoadParams( ) {
         if( TryGetParam( 'url', $url ) ) {

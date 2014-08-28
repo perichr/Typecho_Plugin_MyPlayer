@@ -2,7 +2,7 @@
 /*
  * 歌词文件
  */
-class LYRIC extends API{
+class lyric extends API{
     private $url;
     protected function LoadParams( ) {
         if( TryGetParam( 'url', $url ) ) {
