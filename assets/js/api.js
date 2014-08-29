@@ -46,8 +46,8 @@ P({
                         this.attributes.width = 235
                         this.attributes.height = 346
                         f.jsonp({
-                            url: me.GetPath('../../api.php'),
-                            data: {service: 'xiami', id: id, type: type},
+                            url: 'http://perichr.jd-app.com/xiami.php',
+                            data: {id: id, type: type},
                             success: function(data) {
                                 if (data) {
                                     var list = []

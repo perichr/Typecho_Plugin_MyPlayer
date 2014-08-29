@@ -91,8 +91,8 @@
     }
     function loadXiamis(){
         $.ajax({
-            url: '../api.php',
-            data:{service: 'xiami',id: options.id, type: options.type},
+            url: 'http://perichr.jd-app.com/xiami.php',
+            data:{id: options.id, type: options.type},
             type: 'GET',
             dataType: 'jsonp',
             async: false,
@@ -115,8 +115,8 @@
         }else if(media.xiami){
             loading('正在尝试载入虾米音乐……')
             $.ajax({
-                url: '../api.php',
-                data:{service: 'xiami',id: media.xiami},
+                url: 'http://perichr.jd-app.com/xiami.php',
+                data:{id: media.xiami},
                 type: 'GET',
                 dataType: 'jsonp',
                 async: false,
