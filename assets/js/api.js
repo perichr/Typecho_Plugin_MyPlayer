@@ -15,85 +15,59 @@ P({
                 'check': function(href) {
                     return href && /^http:\/\/www\.xiami\.com\/(song|album|artist|collect)\/\d/.test(href)
                 },
-                'create': function(href) {
-                    var id = href.replace(/.*\/(\d+)\/?/, '$1'),
-                        type = href.replace(/.*(song|album|artist|collect).*/, '$1'),
-                        single = type === 'song',
-                        bind = this,
-                        s = o('xiami_single') == '0',
-                        m = o('xiami_multi') == '0'
-                    if(single && s) {
-                        this.base = 'flash'
-                        this.attributes.width = 257
-                        this.attributes.height = 33
-                        this.attributes.src = href.replace(/.*\/(\d+)\/?/, 'http://www.xiami.com/widget/0_$1/singlePlayer.swf')
-                        this.callback()
-                    } else if(single && !s) {
-                        this.base = 'iframe'
+                'jsonp': function(href) {
+                    var el = this
+                    el.xiami = href.replace(/.*\/(\d+)\/?/, '$1')
+                    el.type = href.replace(/.*(song|album|artist|collect).*/, '$1')
+                    el.single = el.type === 'song'
+                    el.offical = el.single ? o('xiami_single') == '0' : o('xiami_multi') == '0'
+                    if(!el.single && el.offical){
+                        return 'http://perichr.jd-app.com/xiami.php?type=' + el.type + '&id=' + el.xiami
+                    }
+                    return false
+                },
+                'create': function(data) {
+                    var bind = this,
+                        el = bind.element
+                    if(el.single && el.offical){
+                        bind.base = 'flash'
+                        bind.attributes.width = 257
+                        bind.attributes.height = 33
+                        bind.attributes.src = 'http://www.xiami.com/widget/0_' + el.xiami + '/singlePlayer.swf'
+                    } else if(el.single && !el.offical) {
                         var op = {theme: f.trim(o('theme')), media: []}
                         op.media.push({
-                            xiami: href.replace(/.*\/(\d+)\/?/, '$1'),
+                            xiami: el.xiami,
                         })
-                        if(this.element.getAttribute(o.auto_sign)){
+                        if(bind.element.getAttribute(o.auto_sign)){
                             op.autoplay = true
                         }
-                        this.attributes.src = me.GetPath('../../player/#') + JSON.stringify(op)
-                        this.attributes.width = 223
-                        this.attributes.height = 24
-                        this.callback()
-                    } else if(!single && m) {
-                        this.base = 'flash'
-                        this.attributes.width = 235
-                        this.attributes.height = 346
-                        f.jsonp({
-                            url: 'http://perichr.jd-app.com/xiami.php',
-                            data: {id: id, type: type},
-                            success: function(data) {
-                                if (data) {
-                                    var list = []
-                                    f.each(data, function(i, s){
-                                        list.push(s.song_id)
-                                    })
-                                    var theme = f.trim(o('theme')).split('|')
-                                    bind.attributes.src = 'http://www.xiami.com/widget/0_' + list.join() + ',_' + bind.attributes.width + '_' + bind.attributes.height + '_' + theme[0] + '_' + theme[1] + '/multiPlayer.swf'
-                                    bind.callback()
-                                }
-                            }
-                        })
-                    } else if(!single && !m) {
-                        this.base = 'iframe'
-                        var op = {theme: f.trim(o('theme')), type: type, id: href.replace(/.*\/(\d+)\/?/, '$1')}
-                        if(this.element.getAttribute(o.auto_sign)){
+                        bind.base = 'iframe'
+                        bind.attributes.src = me.GetPath('../../player/#') + JSON.stringify(op)
+                        bind.attributes.width = 223
+                        bind.attributes.height = 24
+                    } else if(!el.single && el.offical) {
+                        if (data) {
+                            var list = []
+                            f.each(data, function(i, s){
+                                list.push(s.song_id)
+                            })
+                            var theme = f.trim(o('theme')).split('|')
+                            bind.base = 'flash'
+                            bind.attributes.width = 235
+                            bind.attributes.height = 346
+                            bind.attributes.src = 'http://www.xiami.com/widget/0_' + list.join() + ',_' + bind.attributes.width + '_' + bind.attributes.height + '_' + theme[0] + '_' + theme[1] + '/multiPlayer.swf'
+                            return true
+                        }
+                    } else if(!el.single && !el.offical) {
+                        bind.base = 'iframe'
+                        var op = {theme: f.trim(o('theme')), type: el.type, id: el.xiami}
+                        if(el.getAttribute(o.auto_sign)){
                             op.autoplay = true
                         }
-                        this.attributes.src = me.GetPath('../../player/#') + JSON.stringify(op)
-                        this.attributes.width = 223
-                        this.attributes.height = 240
-                        this.callback()
-
-                        
-                        /*
-                        f.jsonp({
-                            url: me.GetPath('../../api.php'),
-                            data: {service: 'xiami', id: id, type: type},
-                            success: function(data) {
-                                var op = {theme: f.trim(o('theme')), media: []}
-                                if(bind.element.getAttribute(o.auto_sign)){
-                                    op.autoplay = true
-                                }
-                                if (data) {
-                                    var list = []
-                                    f.each(data, function(i, s){
-                                        op.media.push({
-                                            xiami: s.song_id
-                                        })
-                                    })
-                                    bind.attributes.src = me.GetPath('../../player/#') + JSON.stringify(op)
-                                    bind.callback()
-                                }
-                            }
-                        })
-                        */
+                        bind.attributes.src = me.GetPath('../../player/#') + JSON.stringify(op)
+                        bind.attributes.width = 223
+                        bind.attributes.height = 240
                     }
                 }
             },
@@ -106,7 +80,6 @@ P({
                     this.attributes.width = 480
                     this.attributes.height = 400
                     this.attributes.src = href.replace(/^.*id_(.*)\.html$/g, 'http://player.youku.com/player.php/sid/$1/v.swf')
-                    this.callback()
                 }
             },
             '土豆视频': {
@@ -118,28 +91,23 @@ P({
                     this.attributes.width = 480
                     this.attributes.height = 400
                     this.attributes.src = href.replace('programs\/view', 'v') + 'v.swf'
-                    this.callback()
                 }
             },
             '爱奇艺视频': {
                 'check': function(href) {
                     return href && 0 == href.indexOf('http://www.iqiyi.com/v_')
                 },
-                'create': function(href) {
-                    this.base = 'flash'
-                    this.attributes.width = 480
-                    this.attributes.height = 400
-                    var id = href.replace(/^.*v_(.*)\.html$/g, '$1'), bind = this
-                    f.jsonp({
-                        url: me.GetPath('../../api.php'),
-                        data: {service: 'iqiyi', id: id},
-                        success: function(data) {
-                            if (data.url) {
-                                bind.attributes.src = data.url
-                                bind.callback()
-                            }
-                        }
-                    })
+                'jsonp': function(href) {
+                    return me.GetPath('../../api.php') + '?service=iqiyi&id=' + href.replace(/^.*v_(.*)\.html$/g, '$1')
+                },
+                'create': function(data) {
+                    if (data.url) {
+                        this.base = 'flash'
+                        this.attributes.width = 480
+                        this.attributes.height = 400
+                        this.attributes.src = data.url
+                        return true
+                    }
                 }
             },
             '音悦台MV': {
@@ -151,7 +119,6 @@ P({
                     this.attributes.width = 480
                     this.attributes.height = 334
                     this.attributes.src = href.replace(/^.*\/(\d*)$/g, 'http://player.yinyuetai.com/video/player/$1/v_0.swf')
-                    this.callback()
                 }
             },
             '乐视TV': {
@@ -163,7 +130,6 @@ P({
                     this.attributes.width = 541
                     this.attributes.height = 450
                     this.attributes.src = href.replace(/^.*\/(\d*)\.html$/g, 'http://i7.imgs.letv.com/player/swfPlayer.swf?autoPlay=0&id=$1')
-                    this.callback()
                 }
             },
             '56视频': {
@@ -175,7 +141,6 @@ P({
                     this.attributes.width = 480
                     this.attributes.height = 408
                     this.attributes.src = href.replace(/^.*\/v_(.*)\.html$/g, 'http://player.56.com/v_$id.swf')
-                    this.callback()
                 }
             },
             '哔哩哔哩': {
@@ -188,37 +153,30 @@ P({
                     this.attributes.height = 452
                     if (href.indexOf('.html') == -1) href += "/index_1.html"
                     var aid = href.replace(/^.*\/av(\d+)\/.*/g, '$1'),
-                        page = href.replace(/^.*\/index_(\d+)\.html$/g, '$1'),
-                        bind = this
-                    this.attributes.src = 'http://static.hdslb.com//miniloader.swf?aid=' + aid + '&page=' + page
-                    this.callback()
+                        page = href.replace(/^.*\/index_(\d+)\.html$/g, '$1')
+                    this.attributes.src = 'http://static.hdslb.com/miniloader.swf?aid=' + aid + '&page=' + page
                 }
             },
             '新浪视频': {
                 'check': function(href) {
                     return href && (/#\d+$/.test(href) || /^http:\/\/video\.sina\.com\.cn\/.+\d+\.html$/.test(href))
                 },
-                'create': function(href) {
+                'jsonp': function(href) {
+                    return (/#\d+$/.test(href)) ? false : me.GetPath('../../api.php') + '?service=sina&url=' + encodeURIComeonent(href)
+                },
+                'create': function(data) {
                     var bind = this, bindWithVid = function( vid ){
                         bind.base = 'flash'
                         bind.attributes.width = 480
                         bind.attributes.height = 370
                         bind.attributes.src = 'http://you.video.sina.com.cn/api/sinawebApi/outplayrefer.php/vid=' + vid + '/s.swf'
-                        bind.callback()
                     }
-                    if(/#\d+$/.test(href)){
-                        bindWithVid( href.replace(/.+#(\d+)$/g, '$1') )
-                        return
+                    if(/#\d+$/.test(this.element.href)){
+                        bindWithVid( this.element.href.replace(/.+#(\d+)$/g, '$1') )
+                    } else if(data.url){
+                        bindWithVid( data.url )
+                        return true
                     }
-                    f.jsonp({
-                        url: me.GetPath('../../api.php'),
-                        data: {service: 'sina', id: encodeURIComeonent(href)},
-                        success: function(data) {
-                            if (data.url) {
-                                bindWithVid( data.url )
-                            }
-                        }
-                    })
                 }
             },
             'mp3': {
@@ -240,7 +198,6 @@ P({
                     this.attributes.src = me.GetPath('../../player/#') + JSON.stringify(op)
                     this.attributes.width = 223
                     this.attributes.height = 24
-                    this.callback()
                 }
             },
             'gist': {
@@ -251,7 +208,6 @@ P({
                     this.base = 'iframe'
                     this.attributes.src = href + '.pibb'
                     this.attributes.height = 200
-                    this.callback()
                 }
             },
             'github': {
@@ -263,7 +219,6 @@ P({
                     this.attributes.src = href.replace(/^https\:\/\/github\.com\/([^\/]+)\/([^\/]+)/, 'http://lab.lepture.com/github-cards/card.html?user=$1&repo=$2')
                     this.attributes.width = 400
                     this.attributes.height = 200
-                    this.callback()
                 }
             },
             'html5 audio': {
@@ -274,7 +229,6 @@ P({
                 'create': function(href) {
                     this.base = 'audio'
                     this.attributes.src = href
-                    this.callback()
                 }
             },
             'html5 video': {
@@ -287,7 +241,6 @@ P({
                     this.attributs.width = this.width || 480
                     this.attributs.height = this.height || 400
                     this.attributes.src = href
-                    this.callback()
                 }
             },
             'flash': {
@@ -300,7 +253,6 @@ P({
                     this.attributs.width = this.width || 480
                     this.attributs.height = this.height || 400
                     this.attributs.src = href
-                    this.callback()
                 }
             },
         })

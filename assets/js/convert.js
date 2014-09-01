@@ -3,7 +3,17 @@ P({
     id: 'convert.js',
     key: 'MyPlayer',
     Init: function(me){
+        /*
         me.Load('api.js', function(){
+            if(window.$){
+                Init()
+            }else{
+                me.Load('../../../../../admin/js/jquery.js', Init)
+            }
+        })
+        */
+        me.Load('api.js', Init)
+        function Init(){
             var f = me.fn,
                 o = me.option,
                 api = me.GetPlugin('api.js')
@@ -40,6 +50,14 @@ P({
                     },
                     'tag': 'iframe'
                 },
+                 'jplayer': {
+                    'attributes': {
+                        'class': 'jplayer',
+                        'width': 240,
+                        'height': 36
+                    },
+                    'tag': 'div'
+                },
                 'audio': {
                     'attributes': {
                         'controls': 'controls',
@@ -63,9 +81,6 @@ P({
             var Ck = me.CheckMode = function(el) {
                     var data_sign = o('data_sign'),
                         mode = el.getAttribute(data_sign)
-
-                    
-                    
                     if (mode === 'false') return false
                     if (mode) return mode
                     f.each(api.option.apis, function(key, item) {
@@ -91,19 +106,40 @@ P({
                             type: el.getAttribute('data-type'),
                             options: el.getAttribute('data-options'),
                         }
-                        api.option.apis[mode].create.call(bind, el.href)
-                        el.title = '正在尝试载入外链播放器……'
-                        var loading = f.element('span', {'class': 'loading'})
-                        f.text(loading, '尝试载入：')
-                        f.prepend(el, loading)
-                        return true
+                        var m =  api.option.apis[mode],
+                            c = false,
+                            jsonp = m.jsonp,
+                            loading = f.element('span', {'class': 'loading'}),
+                            url
+                        if(jsonp && (url = jsonp.call(el, el.href, bind.type))){
+                            f.text(loading, '尝试载入：')
+                            f.prepend(el, loading)
+                            f.jsonp({
+                                url: url,
+                                success: function(data){
+                                    if(m.create.call(bind, data)){
+                                        bind.callback()
+                                        c = true
+                                    }
+                                }
+                            })
+                            setTimeout(function(){
+                                if(!c){
+                                    f.remove(loading)
+                                }
+                            }, 10000);
+                        } else {
+                            m.create.call(bind, el.href)
+                            bind.callback()
+                            c = true
+                        }
                     }
 
                     function callback() {
                         var attributes = this.attributes,
                             base = _b[this.base] || {}
                         f.extend(attributes, base.attributes, false)
-                        var player = f.element(base.tag, attributes)
+                        var player = f.element(base.tag, attributes, base.childs)
                         f.after(el, player)
                         f.remove(el)
                     }
@@ -133,6 +169,6 @@ P({
                     }
                 }
             })
-        })
+        }
     }
 })

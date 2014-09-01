@@ -4,7 +4,7 @@
  */
 class iqiyi extends API{
     private $id;
-    protected function LoadRemote( ) {
+    protected function LoadParams( ) {
         if( TryGetParam( 'id', $id ) ) {
             $this->id = $id;
         } else{
