@@ -4,7 +4,7 @@
  *
  * @package MyPlayer
  * @author perichr
- * @version 1.2 dev 20140901
+ * @version 1.2 dev 20140905
  * @link http://perichr.org
  */
 class MyPlayer_Plugin implements Typecho_Plugin_Interface
@@ -43,7 +43,7 @@ class MyPlayer_Plugin implements Typecho_Plugin_Interface
             'first', _t('是否自动转换链接'));
         $form->addInput($mode);
 
-        $audio_player_theme = new Typecho_Widget_Helper_Form_Element_Text('audio_player_theme', NULL, 'BBBBBB|CCCCCC|FFFFFF|888888|FFFFFF', _t('音频播放器的配色'), _t('前景|背景|文字|高亮|高亮文字。不要加#号。'));
+        $audio_player_theme = new Typecho_Widget_Helper_Form_Element_Text('audio_player_theme', NULL, 'CCCCCC|FFFFFF|333333|AAAAAA|FFFFFF', _t('音频播放器的配色'), _t('前景|背景|文字|高亮|高亮文字。不要加#号。'));
         $form->addInput($audio_player_theme);
         
         $xiami_single = new Typecho_Widget_Helper_Form_Element_Radio('xiami_single',

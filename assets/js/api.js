@@ -240,13 +240,19 @@ P({
             },
             'github': {
                 'check': function(href) {
-                    return href && /^https\:\/\/github\.com\/[^\/]+\/\w+/.test(href)
+                    return href && /^https\:\/\/github\.com\/[^\/]+/.test(href)
                 },
                 'create': function(href) {
                     this.base = 'iframe'
-                    this.attributes.src = href.replace(/^https\:\/\/github\.com\/([^\/]+)\/([^\/]+)/, 'http://lab.lepture.com/github-cards/card.html?user=$1&repo=$2')
                     this.attributes.width = 400
                     this.attributes.height = 200
+                    href = href.substring(19).split('/')
+                    var user = href[0],
+                        repo = href[1]
+                    this.attributes.src = 'http://lab.lepture.com/github-cards/card.html?user=' + user
+                    if(repo){
+                        this.attributes.src += '&repo=' + repo
+                    }
                 }
             },
             'html5 audio': {
