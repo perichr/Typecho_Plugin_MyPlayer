@@ -3,15 +3,6 @@ P({
     id: 'convert.js',
     key: 'MyPlayer',
     Init: function(me){
-        /*
-        me.Load('api.js', function(){
-            if(window.$){
-                Init()
-            }else{
-                me.Load('../../../../../admin/js/jquery.js', Init)
-            }
-        })
-        */
         me.Load('api.js', Init)
         function Init(){
             var f = me.fn,
@@ -98,8 +89,8 @@ P({
                         var bind = {
                             api: api.option.apis[mode],
                             element: el,
-                            callback: callback,
                             attributes: {},
+                            childs: [],
                             width: el.getAttribute('data-width'),
                             height: el.getAttribute('data-height'),
                             lyrics: el.getAttribute('data-lyrics'),
@@ -118,7 +109,7 @@ P({
                                 url: url,
                                 success: function(data){
                                     if(m.create.call(bind, data)){
-                                        bind.callback()
+                                        callback.call(bind)
                                         c = true
                                     }
                                 }
@@ -130,7 +121,7 @@ P({
                             }, 10000);
                         } else {
                             m.create.call(bind, el.href)
-                            bind.callback()
+                            callback.call(bind)
                             c = true
                         }
                     }
@@ -139,9 +130,10 @@ P({
                         var attributes = this.attributes,
                             base = _b[this.base] || {}
                         f.extend(attributes, base.attributes, false)
-                        var player = f.element(base.tag, attributes, base.childs)
+                        var player = f.element(base.tag, attributes, this.childs)
                         f.after(el, player)
                         f.remove(el)
+                        if(this.triger && typeof this.triger == 'function') this.triger(player)
                     }
                 }
 

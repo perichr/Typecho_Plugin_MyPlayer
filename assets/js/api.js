@@ -6,10 +6,18 @@ P({
         var o = me.option, f = me.fn, Add = function(key, item) {
             o.apis[key] = item
         }, AddRange = function(list) {
-            me.fn.each(list, Add)
+            f.each(list, Add)
         }
         o('apis', {})
-        o('auto_sign', 'data-auto-play')
+        o('auto_sign', 'data-autoplay')
+        f('jplayer', function(element){
+            f.$(me.GetPath('../../../../../admin/js/jquery.js'))
+            f.$(function($){
+                me.Load('jquery.jplayer.min.js', 'mplayer.js', function(){
+                    $(element).mp()
+                })
+            })
+        })
         AddRange({
             '虾米': {
                 'check': function(href) {
@@ -21,10 +29,10 @@ P({
                     el.type = href.replace(/.*(song|album|artist|collect).*/, '$1')
                     el.single = el.type === 'song'
                     el.offical = el.single ? o('xiami_single') == '0' : o('xiami_multi') == '0'
-                    if(!el.single && el.offical){
-                        return 'http://perichr.jd-app.com/xiami.php?type=' + el.type + '&id=' + el.xiami
+                    if(el.single && el.offical){
+                        return false
                     }
-                    return false
+                    return 'http://perichr.jd-app.com/xiami.php?type=' + el.type + '&id=' + el.xiami
                 },
                 'create': function(data) {
                     var bind = this,
@@ -34,18 +42,6 @@ P({
                         bind.attributes.width = 257
                         bind.attributes.height = 33
                         bind.attributes.src = 'http://www.xiami.com/widget/0_' + el.xiami + '/singlePlayer.swf'
-                    } else if(el.single && !el.offical) {
-                        var op = {theme: f.trim(o('theme')), media: []}
-                        op.media.push({
-                            xiami: el.xiami,
-                        })
-                        if(bind.element.getAttribute(o.auto_sign)){
-                            op.autoplay = true
-                        }
-                        bind.base = 'iframe'
-                        bind.attributes.src = me.GetPath('../../player/#') + JSON.stringify(op)
-                        bind.attributes.width = 223
-                        bind.attributes.height = 24
                     } else if(!el.single && el.offical) {
                         if (data) {
                             var list = []
@@ -59,15 +55,37 @@ P({
                             bind.attributes.src = 'http://www.xiami.com/widget/0_' + list.join() + ',_' + bind.attributes.width + '_' + bind.attributes.height + '_' + theme[0] + '_' + theme[1] + '/multiPlayer.swf'
                             return true
                         }
-                    } else if(!el.single && !el.offical) {
-                        bind.base = 'iframe'
-                        var op = {theme: f.trim(o('theme')), type: el.type, id: el.xiami}
-                        if(el.getAttribute(o.auto_sign)){
-                            op.autoplay = true
+                    } else {
+                        if (data) {
+                            bind.base = 'jplayer'
+                            this.attributes['class'] = 'mplayer audio'
+                            var autoplay = f.attribute(this.element, o.auto_sign),
+                                ol = {
+                                    'tag': 'ol',
+                                    'childs': []
+                                }
+                            f.each(data, function(index, track){
+                                var li = {
+                                    'tag': 'li',
+                                    'text': track.title,
+                                    'attributes': {
+                                        'data-url': track.url,
+                                        'data-type': 'mp3',
+                                        'data-lyric': track.lyric_url,
+                                        'data-artist': track.artist,
+                                        'data-album': track.album,
+                                        'data-pic': track.album_pic
+                                    }
+                                }
+                                ol.childs.push(li)
+                            })
+                            if(autoplay) this.attributes[o.auto_sign] = autoplay
+                            this.childs.push(ol)
+                            this.triger = function(element){
+                                f('jplayer')(element)
+                            }
+                            return true
                         }
-                        bind.attributes.src = me.GetPath('../../player/#') + JSON.stringify(op)
-                        bind.attributes.width = 223
-                        bind.attributes.height = 240
                     }
                 }
             },
@@ -185,19 +203,29 @@ P({
                     return type ? /^mp3$/.test(type) : (href && /\.(ogg|mp3)$/.test(href))
                 },
                 'create': function(href) {
-                    this.base = 'iframe'
-                    var op = {media: [], theme: f.trim(o('theme'))}
-                    op.media.push({
-                        url: href,
-                        title: this.element.innerHTML,
-                        lyrics: this.lyrics
-                    })
-                    if(this.element.getAttribute(o.auto_sign)){
-                        op.autoplay = true
-                    }
-                    this.attributes.src = me.GetPath('../../player/#') + JSON.stringify(op)
+                    this.base = 'jplayer'
                     this.attributes.width = 223
-                    this.attributes.height = 24
+                    this.attributes.height = 200
+                    this.attributes['class'] = 'mplayer audio'
+                    var lyrics = f.attribute(this.element, 'date-lyric'),
+                        autoplay = f.attribute(this.element, o.auto_sign),
+                        li = {
+                            'tag': 'li',
+                            'text': f.text(this.element),
+                            'attributes': {
+                                'data-url': href,
+                                'data-type': 'mp3'
+                            }
+                        }, ol = {
+                            'tag': 'ol',
+                            'childs': [li]
+                        }
+                    if(lyrics) li.attributes['date-lyric'] = lyric
+                    if(autoplay) this.attributes[o.auto_sign] = autoplay
+                    this.childs.push(ol)
+                    this.triger = function(element){
+                        f('jplayer')(element)
+                    }
                 }
             },
             'gist': {
