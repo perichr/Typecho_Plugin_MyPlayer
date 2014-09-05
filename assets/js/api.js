@@ -232,6 +232,7 @@ P({
                 'check': function(href) {
                     return href && /^https\:\/\/gist\.github\.com\/[^\/]+\/\w+/.test(href)
                 },
+                'silence': true,
                 'create': function(href) {
                     this.base = 'iframe'
                     this.attributes.src = href + '.pibb'
@@ -242,6 +243,7 @@ P({
                 'check': function(href) {
                     return href && /^https\:\/\/github\.com\/[^\/]+/.test(href)
                 },
+                'silence': true,
                 'create': function(href) {
                     this.base = 'iframe'
                     this.attributes.width = 400

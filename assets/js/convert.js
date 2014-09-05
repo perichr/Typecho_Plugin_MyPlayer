@@ -152,7 +152,9 @@ P({
                 var link = this,
                     mode = Ck(link)
                 if(mode){
-                    if(conv && o.mode.FIRST){
+                    if(!!api.option.apis[mode].silence){
+                        Co(link)
+                    } else if (conv && o.mode.FIRST){
                         Co(link)
                         conv = false
                     } else {

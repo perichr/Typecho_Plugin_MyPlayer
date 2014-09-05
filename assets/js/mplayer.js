@@ -21,7 +21,8 @@ P({
                 $handle = $('.progresshandle', $player),
                 $current = $('.currenttime', $player),
                 auto = !!$this.data('autoplay'),
-                first = true
+                first = true,
+                current = 0
             if($jplayer.size() == 0){
                 $jplayer = $('<span>')
                     .addClass('jplayer')
@@ -32,7 +33,8 @@ P({
             }
             setPlayer()
             $ol.on('click', 'li', function(){
-                setPlayer($(this).data('index'))
+                current = $(this).data('index')
+                setPlayer()
             })
             $progress.on('click.seek', click_seek)
             $played.on('click.seek', click_seek)
@@ -62,17 +64,18 @@ P({
                     seek_duration = $jplayer.data('jPlayer').status.duration * seek_percent
                 return seek_duration
             }
-            function setPlayer(index){
+            function setPlayer(){
                 if(list.length == 0){ return }
-                if(!index || index >= list.length){index = 0}
-                var $li = $lists.eq(index)
-                if($li.hasClass('playing')){
+                if(current >= list.length){current = 0}
+                var $li = $lists.eq(current)
+                if($li.hasClass('selected')){
                     toggle()
                     return
                 }
+                $('.selected', $ol).removeClass('selected')
                 $('.playing', $ol).removeClass('playing')
-                $li.addClass('playing')
-                var media = list[index],
+                $li.addClass('selected')
+                var media = list[current],
                     $li_img =$li.find('img')
                 if(media.title){
                     $('.title', $player).text(media.title)
@@ -108,7 +111,8 @@ P({
                             if(list.length == 1){
                                 play()
                             }else{
-                                setPlayer( ++ index)
+                                current ++
+                                setPlayer()
                             }
                         },
                         consoleAlerts:true,
@@ -120,14 +124,17 @@ P({
             function play(time){
                 time ? $jplayer.jPlayer('play', time) : $jplayer.jPlayer('play')
                 $player.addClass('playing')
+                $lists.eq(current).addClass('playing')
             }
             function pause(){
                 $jplayer.jPlayer('pause')
                 $player.removeClass('playing')
+                $lists.eq(current).removeClass('playing')
             }
             function stop(){
                 $jplayer.jPlayer('stop')
                 $player.removeClass('playing')
+                $lists.eq(current).removeClass('playing')
             }
             function toggle(){
                 $player.hasClass('playing') ? pause() : play()
@@ -311,6 +318,7 @@ P({
                         'opacity': '0.5',
                     },
                     '.mplayer li img' : {
+                        'transition': '.3s ease',
                         'position' :'absolute',
                         'vertical-align':'middle',
                         'border':'none',
@@ -322,12 +330,20 @@ P({
                         'top':'0',
                         'overflow':'hidden',
                     },
+                    '.mplayer li.selected img' : {
+                        'background' : theme.active,
+                        'color' : theme.activetext,
+                        'border-radius' : '18px'
+                    },
+                    '.mplayer li.playing img' : {
+                        'animation': '5s play linear infinite',
+                    },
                     '.mplayer li span:before' : {
                         'content': '"by"',
                         'font-size': '12px',
                         'margin' : '6px'
                     },
-                    '.mplayer li.playing' : {
+                    '.mplayer li.selected' : {
                         'background' : theme.active,
                         'color' : theme.activetext,
                         'font-weight': 'bolder'
