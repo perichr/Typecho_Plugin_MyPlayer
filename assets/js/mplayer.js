@@ -180,8 +180,9 @@ P({
                 getData($this, track, 'artist')
                 var audio = !!~'mp3,'.indexOf(track.type)
                 if(track.artist){
-                    var aritst = $('<span>').text(track.artist).appendTo($this)
+                    var aritst = $('<span>').text(' by ' + track.artist).appendTo($this)
                 }
+                $this.attr('title', $this.text())
                 list.push(track)
                 if(track.pic){
                     $img.attr('src', track.pic)
@@ -230,7 +231,7 @@ P({
                 })
             var style = {
                     '.mplayer' : {
-                        'margin' : '0 0 0 64px',
+                        'margin' : '0 0 0 0',
                         'width' : '80%',
                         'min-width' : '240px',
                         'max-width' : '600px',
@@ -313,8 +314,11 @@ P({
                         'height':'36px',
                         'margin' : '1px 0',
                         'padding' : '0 0 0 12px',
+                        'white-space': 'nowrap'
                     },
                     '.mplayer li span' : {
+                        'font-size': '12px',
+                        'font-weight': 'lighter',
                         'opacity': '0.5',
                     },
                     '.mplayer li img' : {
@@ -337,11 +341,6 @@ P({
                     },
                     '.mplayer li.playing img' : {
                         'animation': '5s play linear infinite',
-                    },
-                    '.mplayer li span:before' : {
-                        'content': '"by"',
-                        'font-size': '12px',
-                        'margin' : '6px'
                     },
                     '.mplayer li.selected' : {
                         'background' : theme.active,
